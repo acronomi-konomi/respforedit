@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стего-Мессенджер | Лингвистическая стеганография</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Индикатор загрузки -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Загрузка морфологических словарей...</p>
+            <p class="loading-details" id="loading-status">Инициализация...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🔐 Стего-Мессенджер</h1>
+            <p class="subtitle">Лингвистическая стеганография для русского языка</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Режимы работы -->
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="encode">Кодирование</button>
+                <button class="mode-btn" data-mode="decode">Декодирование</button>
+                <button class="mode-btn" data-mode="recovery">Восстановление</button>
+            </div>
+
+            <!-- Панель кодирования -->
+            <div class="panel encode-panel active">
+                <div class="input-group">
+                    <label for="secret-message">Секретное сообщение:</label>
+                    <textarea id="secret-message" placeholder="Введите сообщение для сокрытия..."></textarea>
+                    <div class="info">
+                        <span id="secret-length">0</span> символов | 
+                        <span id="secret-bytes">0</span> байт
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="carrier-text">Текст-носитель:</label>
+                    <div class="textarea-wrapper">
+                        <textarea id="carrier-text" placeholder="Начните вводить текст-носитель..."></textarea>
+                        <div id="autocomplete-overlay" class="autocomplete-overlay"></div>
+                    </div>
+                    <div class="info">
+                        <span>Ёмкость: <strong id="carrier-capacity">0</strong> бит</span> | 
+                        <span>Требуется: <strong id="required-capacity">0</strong> бит</span> |
+                        <span class="status" id="capacity-status">Недостаточно</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-encode">Пароль шифрования:</label>
+                    <input type="password" id="password-encode" placeholder="Введите надёжный пароль">
+                </div>
+
+                <!-- Настройки синонимов -->
+                <div class="synonym-settings">
+                    <h3>⚙️ Настройки синонимизации:</h3>
+                    <div class="synonym-mode-row">
+                        <label class="synonym-mode-label">Источник синонимов:</label>
+                        <div class="synonym-mode-btns">
+                            <button class="syn-mode-btn active" data-synmode="static" title="Использовать готовый словарь synonyms.json">📚 Статический словарь</button>
+                            <button class="syn-mode-btn" data-synmode="backend" title="Navec + pymorphy3 через Python-сервер (synonyms_server.py)">🐍 Python-бэкенд (navec)</button>
+                        </div>
+                        <span id="backend-status" class="backend-status" style="display:none">⏳ Проверка...</span>
+                    </div>
+                    <div class="synonym-threshold-row" id="threshold-row" style="display:none">
+                        <label for="syn-threshold">Косинусная близость: <strong id="threshold-val">0.50</strong></label>
+                        <input type="range" id="syn-threshold" min="0.30" max="0.90" step="0.01" value="0.50">
+                        <span class="threshold-hint">
+                            <span style="color:#94a3b8">← меньше близость = больше синонимов (больше ёмкость)</span>
+                            <span style="color:#94a3b8">больше близость = лучше качество →</span>
+                        </span>
+                    </div>
+                    <div class="synonym-backend-row" id="backend-url-row" style="display:none">
+                        <label for="backend-url">URL сервера:</label>
+                        <input type="text" id="backend-url" value="http://127.0.0.1:5000" placeholder="http://127.0.0.1:5000">
+                        <button id="btn-check-backend" class="btn-small">🔍 Проверить</button>
+                        <span class="backend-hint">Запустите: <code>python synonyms_server.py</code></span>
+                    </div>
+                </div>
+
+                <!-- Настройки буквенного стего -->
+                <div class="letter-stego-settings">
+                    <h3>✏️ Настройки буквенного стего:</h3>
+                    <div class="synonym-threshold-row">
+                        <label for="letter-density">Плотность опечаток: <strong id="density-val">100%</strong></label>
+                        <input type="range" id="letter-density" min="5" max="100" step="5" value="100">
+                        <span class="threshold-hint">
+                            <span style="color:#94a3b8">← редко, только длинные слова (незаметно)</span>
+                            <span style="color:#94a3b8">каждое слово (максимум ёмкости) →</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="channel-settings">
+                    <h3>Активные каналы кодирования:</h3>
+                    <div class="channel-grid">
+                        <label><input type="checkbox" class="channel-toggle" data-channel="synonyms" checked> Синонимы</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="yo" checked> Ё/Е замены</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="phrases" checked> Обороты речи</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="parasites"> Слова-паразиты</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="numbers" checked> Буквы/цифры</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="punctuation" checked> Пунктуация</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="smiles"> Смайлики</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="case"> Регистр</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="typos"> Опечатки</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="letter-stego" checked title="CRC-верифицированные мутации букв (seed→мутация→seed паттерн)"> Буквенное стего ✨</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="wordOrder" checked> Порядок слов</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="participles" checked> Причастия</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="voice" checked> Залоги</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="affixes"> Аффиксы</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="abbreviations" checked> Аббревиатуры</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="spaces"> Пробелы</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="duplets" checked> Дуплеты</label>
+                        <label><input type="checkbox" class="channel-toggle" data-channel="dates" checked> Даты</label>
+                    </div>
+                </div>
+
+                <button class="btn-primary" id="btn-encode">🔒 Закодировать сообщение</button>
+
+                <div class="input-group">
+                    <label for="output-text">Результат (стего-текст):</label>
+                    <textarea id="output-text" readonly></textarea>
+                    <button class="btn-secondary" id="btn-copy">📋 Копировать</button>
+                </div>
+            </div>
+
+            <!-- Панель декодирования -->
+            <div class="panel decode-panel">
+                <div class="input-group">
+                    <label for="stego-text">Стего-текст:</label>
+                    <textarea id="stego-text" placeholder="Вставьте текст для декодирования..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-decode">Пароль:</label>
+                    <input type="password" id="password-decode" placeholder="Введите пароль">
+                </div>
+
+                <button class="btn-primary" id="btn-decode">🔓 Декодировать сообщение</button>
+
+                <div class="input-group">
+                    <label for="decoded-message">Декодированное сообщение:</label>
+                    <textarea id="decoded-message" readonly></textarea>
+                </div>
+            </div>
+
+            <!-- Панель восстановления -->
+            <div class="panel recovery-panel">
+                <div class="input-group">
+                    <label for="damaged-text">Повреждённый стего-текст:</label>
+                    <textarea id="damaged-text" placeholder="Вставьте повреждённый текст..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label for="password-recovery">Пароль:</label>
+                    <input type="password" id="password-recovery" placeholder="Введите пароль">
+                </div>
+
+                <div class="recovery-options">
+                    <label><input type="checkbox" id="opt-bruteforce"> Использовать брутфорс</label>
+                    <label>Макс. итераций: <input type="number" id="max-iterations" value="10000" min="100"></label>
+                </div>
+
+                <button class="btn-primary" id="btn-recovery">🔧 Восстановить данные</button>
+
+                <div class="progress-bar" id="recovery-progress" style="display:none;">
+                    <div class="progress-fill"></div>
+                    <span class="progress-text">0%</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="recovered-message">Восстановленное сообщение:</label>
+                    <textarea id="recovered-message" readonly></textarea>
+                </div>
+            </div>
+
+             <!-- Статистика -->
+             <div class="stats-panel">
+                <h3>📊 Статистика последней операции</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Использовано каналов:</span>
+                        <span class="stat-value" id="stat-channels">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Закодировано бит:</span>
+                        <span class="stat-value" id="stat-bits">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Эффективность:</span>
+                        <span class="stat-value" id="stat-efficiency">0%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Время операции:</span>
+                        <span class="stat-value" id="stat-time">0 мс</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <footer>
+             <p>⚠️ Используйте надёжные пароли. Данные обрабатываются локально.</p>
+             <p style="font-size: 0.9em; color: #94a3b8;">
+                 Использует <a href="https://github.com/deNULL/Az.js" target="_blank">Az.js</a> 
+                 для морфологического анализа
+             </p>
+         </footer>
+    </div>
+
+    <!-- Az.js: морфологическая библиотека (глобальный объект Az) -->
+    <!-- Порядок важен: az.js → az.dawg.js → az.morph.js → az.tokens.js -->
+    <script src="lib/az.js"></script>
+    <script src="lib/az.dawg.js"></script>
+    <script src="lib/az.morph.js"></script>
+    <script src="lib/az.tokens.js"></script>
+
+    <!-- Наши модули -->
+    <script type="module" src="js/main.js"></script>
+ </body>
+</html>
