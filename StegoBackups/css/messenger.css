@@ -1,0 +1,1630 @@
+/* ============================================================
+   CryptoMsg Messenger — Scoped Dark Theme Stylesheet
+   All styles scoped under .crypto-messenger to avoid conflicts
+   when embedded via Tampermonkey, browser extension, or PyWebView.
+   ============================================================ */
+
+/* ── Global Reset (body/html) ──────────────────────────────── */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #0b0d13;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── CSS Variables ──────────────────────────────────────────── */
+.crypto-messenger {
+  --cm-bg-primary: #0b0d13;
+  --cm-bg-secondary: #111318;
+  --cm-bg-tertiary: #181a20;
+  --cm-bg-elevated: #1e2028;
+  --cm-bg-hover: #252730;
+  --cm-bg-input: #14161c;
+  --cm-border: #2a2d38;
+  --cm-border-focus: #22c55e;
+  --cm-text-primary: #e4e6eb;
+  --cm-text-secondary: #9ca0ab;
+  --cm-text-muted: #6b7085;
+  --cm-accent: #22c55e;
+  --cm-accent-hover: #16a34a;
+  --cm-accent-dim: rgba(34,197,94,.12);
+  --cm-accent-glow: rgba(34,197,94,.25);
+  --cm-danger: #ef4444;
+  --cm-warning: #f59e0b;
+  --cm-info: #3b82f6;
+  --cm-sent-bg: #0d3b1e;
+  --cm-sent-border: #166534;
+  --cm-received-bg: #1e2028;
+  --cm-received-border: #2a2d38;
+  --cm-radius-sm: 6px;
+  --cm-radius-md: 10px;
+  --cm-radius-lg: 16px;
+  --cm-radius-xl: 20px;
+  --cm-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --cm-font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, monospace;
+  --cm-transition: .2s ease;
+  --cm-shadow: 0 2px 12px rgba(0,0,0,.4);
+  --cm-shadow-lg: 0 8px 32px rgba(0,0,0,.6);
+  --cm-header-h: 56px;
+  --cm-tabs-h: 44px;
+  --cm-subtabs-h: 40px;
+  --cm-input-min-h: 140px;
+
+  /* Sizing */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport height for mobile browsers */
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  font-family: var(--cm-font-sans);
+  font-size: 14px;
+  color: var(--cm-text-primary);
+  background: var(--cm-bg-primary);
+  box-sizing: border-box;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Safe area for notched phones */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.crypto-messenger *, .crypto-messenger *::before, .crypto-messenger *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Custom Scrollbar ──────────────────────────────────────── */
+.crypto-messenger ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.crypto-messenger ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.crypto-messenger ::-webkit-scrollbar-thumb {
+  background: var(--cm-border);
+  border-radius: 3px;
+}
+.crypto-messenger ::-webkit-scrollbar-thumb:hover {
+  background: var(--cm-text-muted);
+}
+
+/* ── Loading Overlay ───────────────────────────────────────── */
+.crypto-messenger .cm-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--cm-bg-primary);
+  gap: 16px;
+  transition: opacity .4s ease;
+}
+.crypto-messenger .cm-loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.crypto-messenger .cm-loading__spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--cm-border);
+  border-top-color: var(--cm-accent);
+  border-radius: 50%;
+  animation: cm-spin .8s linear infinite;
+}
+.crypto-messenger .cm-loading__text {
+  color: var(--cm-text-secondary);
+  font-size: 14px;
+}
+.crypto-messenger .cm-loading__progress {
+  width: 200px;
+  height: 4px;
+  background: var(--cm-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.crypto-messenger .cm-loading__progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--cm-accent);
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+
+@keyframes cm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.crypto-messenger .cm-header {
+  display: flex;
+  align-items: center;
+  height: var(--cm-header-h);
+  padding: 0 16px;
+  background: var(--cm-bg-secondary);
+  border-bottom: 1px solid var(--cm-border);
+  flex-shrink: 0;
+  gap: 12px;
+  z-index: 10;
+}
+.crypto-messenger .cm-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 17px;
+  white-space: nowrap;
+  color: var(--cm-text-primary);
+  text-decoration: none;
+}
+.crypto-messenger .cm-header__logo-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--cm-accent);
+  border-radius: var(--cm-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-header__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--cm-accent);
+  white-space: nowrap;
+}
+.crypto-messenger .cm-header__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cm-accent);
+  box-shadow: 0 0 6px var(--cm-accent-glow);
+  animation: cm-pulse 2s ease-in-out infinite;
+}
+@keyframes cm-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+.crypto-messenger .cm-header__spacer {
+  flex: 1;
+}
+.crypto-messenger .cm-header__chat-id {
+  font-size: 11px;
+  color: var(--cm-text-muted);
+  font-family: var(--cm-font-mono);
+  background: var(--cm-bg-tertiary);
+  padding: 3px 8px;
+  border-radius: var(--cm-radius-sm);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crypto-messenger .cm-header__btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  color: var(--cm-text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all var(--cm-transition);
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-header__btn:hover {
+  background: var(--cm-bg-hover);
+  color: var(--cm-text-primary);
+  border-color: var(--cm-text-muted);
+}
+
+/* ── Main Mode Tabs ────────────────────────────────────────── */
+.crypto-messenger .cm-tabs {
+  display: flex;
+  align-items: center;
+  height: var(--cm-tabs-h);
+  background: var(--cm-bg-secondary);
+  border-bottom: 1px solid var(--cm-border);
+  padding: 0 12px;
+  gap: 4px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.crypto-messenger .cm-tabs::-webkit-scrollbar { height: 0; }
+.crypto-messenger .cm-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cm-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--cm-radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--cm-transition);
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-tab:hover {
+  color: var(--cm-text-secondary);
+  background: var(--cm-bg-hover);
+}
+.crypto-messenger .cm-tab.active {
+  color: var(--cm-accent);
+  background: var(--cm-accent-dim);
+  border-color: var(--cm-accent);
+}
+
+/* ── Sub-mode Selector (Pills) ─────────────────────────────── */
+.crypto-messenger .cm-subtabs {
+  display: flex;
+  align-items: center;
+  min-height: var(--cm-subtabs-h);
+  background: var(--cm-bg-tertiary);
+  border-bottom: 1px solid var(--cm-border);
+  padding: 6px 12px;
+  gap: 6px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.crypto-messenger .cm-subtabs::-webkit-scrollbar { height: 0; }
+.crypto-messenger .cm-subtab {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cm-text-secondary);
+  background: var(--cm-bg-elevated);
+  border: 1px solid var(--cm-border);
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--cm-transition);
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-subtab:hover {
+  background: var(--cm-bg-hover);
+  color: var(--cm-text-primary);
+}
+.crypto-messenger .cm-subtab.active {
+  color: #fff;
+  background: var(--cm-accent);
+  border-color: var(--cm-accent);
+}
+.crypto-messenger .cm-subtab .cm-subtab__badge {
+  font-size: 10px;
+  background: rgba(255,255,255,.15);
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-left: 2px;
+}
+
+/* ── SVG Icons ─────────────────────────────────────────────── */
+.crypto-messenger .cm-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+.crypto-messenger .cm-icon--sm {
+  width: 14px;
+  height: 14px;
+}
+.crypto-messenger .cm-icon--lg {
+  width: 20px;
+  height: 20px;
+}
+/* Ensure SVGs inherit color from parent */
+.crypto-messenger .cm-icon use {
+  fill: none;
+  stroke: currentColor;
+}
+.crypto-messenger .cm-icon svg {
+  fill: none;
+  stroke: currentColor;
+}
+
+/* ── Encryption Result Preview ──────────────────────────────── */
+.crypto-messenger .cm-encrypt-result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.crypto-messenger .cm-encrypt-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.crypto-messenger .cm-encrypt-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.crypto-messenger .cm-encrypt-result {
+  background: var(--cm-bg-tertiary);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  padding: 10px 12px;
+  font-family: var(--cm-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cm-accent);
+  min-height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.crypto-messenger .cm-encrypt-result:empty::before {
+  content: 'Результат появится здесь…';
+  color: var(--cm-text-muted);
+  font-family: var(--cm-font-sans);
+  font-style: italic;
+}
+.crypto-messenger .cm-encrypt-result--preview {
+  opacity: 0.7;
+  border-style: dashed;
+}
+.crypto-messenger .cm-encrypt-result--preview::after {
+  content: 'Предпросмотр';
+  display: block;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--cm-border);
+  font-family: var(--cm-font-sans);
+  font-size: 10px;
+  font-style: italic;
+  color: var(--cm-text-muted);
+}
+
+/* ── Settings Note ──────────────────────────────────────────── */
+.crypto-messenger .cm-settings__note {
+  font-size: 11px;
+  color: var(--cm-text-muted);
+  font-style: italic;
+  padding: 2px 0 4px;
+  line-height: 1.4;
+}
+
+/* ── Input Area ────────────────────────────────────────────── */
+.crypto-messenger .cm-input-area {
+  flex: 1 1 0;
+  min-height: 0;
+  background: var(--cm-bg-secondary);
+  border-top: 1px solid var(--cm-border);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+/* Shared input styles */
+.crypto-messenger .cm-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.crypto-messenger .cm-input-row--full {
+  flex-direction: column;
+  align-items: stretch;
+}
+.crypto-messenger .cm-textarea,
+.crypto-messenger .cm-input {
+  width: 100%;
+  background: var(--cm-bg-input);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  color: var(--cm-text-primary);
+  font-family: var(--cm-font-sans);
+  font-size: 14px;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  transition: border-color var(--cm-transition);
+}
+.crypto-messenger .cm-textarea:focus,
+.crypto-messenger .cm-input:focus {
+  border-color: var(--cm-accent);
+  box-shadow: 0 0 0 2px var(--cm-accent-glow);
+}
+.crypto-messenger .cm-textarea::placeholder,
+.crypto-messenger .cm-input::placeholder {
+  color: var(--cm-text-muted);
+}
+.crypto-messenger .cm-textarea {
+  min-height: 44px;
+  max-height: 120px;
+  line-height: 1.4;
+}
+.crypto-messenger .cm-textarea--tall {
+  min-height: 60px;
+}
+.crypto-messenger .cm-input--password {
+  font-family: var(--cm-font-mono);
+  font-size: 13px;
+  max-width: 200px;
+}
+.crypto-messenger .cm-input--compact {
+  font-size: 13px;
+}
+.crypto-messenger .cm-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cm-text-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 4px;
+}
+
+/* Password toggle */
+.crypto-messenger .cm-password-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.crypto-messenger .cm-password-wrap .cm-input--password {
+  padding-right: 36px;
+}
+.crypto-messenger .cm-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--cm-text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  transition: color var(--cm-transition);
+}
+.crypto-messenger .cm-password-toggle:hover {
+  color: var(--cm-text-primary);
+}
+
+/* Result preview */
+.crypto-messenger .cm-result-preview {
+  background: var(--cm-bg-tertiary);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  padding: 10px 12px;
+  font-family: var(--cm-font-mono);
+  font-size: 13px;
+  color: var(--cm-accent);
+  min-height: 40px;
+  max-height: 100px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.crypto-messenger .cm-result-preview:empty::before {
+  content: 'Результат появится здесь...';
+  color: var(--cm-text-muted);
+  font-family: var(--cm-font-sans);
+  font-style: italic;
+}
+
+/* Action buttons */
+.crypto-messenger .cm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--cm-font-sans);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  cursor: pointer;
+  transition: all var(--cm-transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-btn--primary {
+  background: var(--cm-accent);
+  border-color: var(--cm-accent);
+  color: #fff;
+}
+.crypto-messenger .cm-btn--primary:hover {
+  background: var(--cm-accent-hover);
+  border-color: var(--cm-accent-hover);
+}
+.crypto-messenger .cm-btn--primary:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.crypto-messenger .cm-btn--secondary {
+  background: var(--cm-bg-elevated);
+  color: var(--cm-text-primary);
+}
+.crypto-messenger .cm-btn--secondary:hover {
+  background: var(--cm-bg-hover);
+}
+.crypto-messenger .cm-btn--toggle {
+  background: var(--cm-bg-elevated);
+  color: var(--cm-text-secondary);
+  padding: 8px 12px;
+}
+.crypto-messenger .cm-btn--toggle.active {
+  background: var(--cm-accent-dim);
+  color: var(--cm-accent);
+  border-color: var(--cm-accent);
+}
+.crypto-messenger .cm-btn--icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 16px;
+}
+.crypto-messenger .cm-btn--send {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--cm-accent);
+  border-color: var(--cm-accent);
+  color: #fff;
+  font-size: 18px;
+  box-shadow: 0 2px 8px var(--cm-accent-glow);
+}
+.crypto-messenger .cm-btn--send:hover {
+  background: var(--cm-accent-hover);
+  box-shadow: 0 4px 16px var(--cm-accent-glow);
+}
+.crypto-messenger .cm-btn--send:disabled {
+  opacity: .4;
+  box-shadow: none;
+}
+
+/* Steganography layout — single column */
+.crypto-messenger .cm-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Encode/Decode toggle ──────────────────────────────────── */
+.crypto-messenger .cm-direction-toggle {
+  display: flex;
+  background: var(--cm-bg-input);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-direction-toggle__btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cm-text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all var(--cm-transition);
+}
+.crypto-messenger .cm-direction-toggle__btn.active {
+  background: var(--cm-accent);
+  color: #fff;
+}
+
+/* ── Settings Panel ────────────────────────────────────────── */
+.crypto-messenger .cm-settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+.crypto-messenger .cm-settings-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.crypto-messenger .cm-settings {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 340px;
+  max-width: 90vw;
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport height for mobile */
+  background: var(--cm-bg-secondary);
+  border-left: 1px solid var(--cm-border);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s ease;
+  box-shadow: var(--cm-shadow-lg);
+  will-change: transform;
+}
+.crypto-messenger .cm-settings.open {
+  transform: translateX(0);
+}
+.crypto-messenger .cm-settings__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid var(--cm-border);
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-settings__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+.crypto-messenger .cm-settings__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  color: var(--cm-text-secondary);
+  cursor: pointer;
+  font-size: 16px;
+  transition: all var(--cm-transition);
+}
+.crypto-messenger .cm-settings__close:hover {
+  background: var(--cm-bg-hover);
+  color: var(--cm-text-primary);
+}
+.crypto-messenger .cm-settings__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.crypto-messenger .cm-settings__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crypto-messenger .cm-settings__section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: var(--cm-accent);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--cm-border);
+}
+
+/* Settings form controls */
+.crypto-messenger .cm-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.crypto-messenger .cm-settings__label {
+  font-size: 13px;
+  color: var(--cm-text-secondary);
+}
+.crypto-messenger .cm-settings__value {
+  font-size: 13px;
+  color: var(--cm-text-primary);
+  font-family: var(--cm-font-mono);
+}
+.crypto-messenger .cm-settings__input {
+  background: var(--cm-bg-input);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  color: var(--cm-text-primary);
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color var(--cm-transition);
+  max-width: 140px;
+}
+.crypto-messenger .cm-settings__input:focus {
+  border-color: var(--cm-accent);
+}
+.crypto-messenger .cm-settings__select {
+  background: var(--cm-bg-input);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+  color: var(--cm-text-primary);
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+  max-width: 160px;
+}
+
+/* Toggle switch */
+.crypto-messenger .cm-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.crypto-messenger .cm-toggle__track {
+  position: absolute;
+  inset: 0;
+  background: var(--cm-bg-elevated);
+  border: 1px solid var(--cm-border);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background var(--cm-transition);
+}
+.crypto-messenger .cm-toggle__track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--cm-text-muted);
+  border-radius: 50%;
+  transition: all var(--cm-transition);
+}
+.crypto-messenger .cm-toggle input:checked + .cm-toggle__track {
+  background: var(--cm-accent);
+  border-color: var(--cm-accent);
+}
+.crypto-messenger .cm-toggle input:checked + .cm-toggle__track::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+
+/* Checkbox for stego channels */
+.crypto-messenger .cm-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.crypto-messenger .cm-checkbox-row input[type="checkbox"] {
+  accent-color: var(--cm-accent);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.crypto-messenger .cm-checkbox-row label {
+  font-size: 13px;
+  color: var(--cm-text-secondary);
+  cursor: pointer;
+}
+
+/* Chat password entries */
+.crypto-messenger .cm-channel-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 0;
+}
+.crypto-messenger .cm-channel-list__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--cm-border);
+  white-space: nowrap;
+}
+.crypto-messenger .cm-channel-list__item--always {
+  background: var(--cm-bg-elevated);
+  color: var(--cm-text-secondary);
+  cursor: default;
+}
+.crypto-messenger .cm-channel-list__item--always::before {
+  content: '✓';
+  font-size: 9px;
+  color: var(--cm-accent);
+  font-weight: 700;
+}
+
+.crypto-messenger .cm-chat-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--cm-bg-tertiary);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-sm);
+}
+.crypto-messenger .cm-chat-entry__id {
+  font-family: var(--cm-font-mono);
+  font-size: 12px;
+  color: var(--cm-text-secondary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crypto-messenger .cm-chat-entry__pw {
+  font-family: var(--cm-font-mono);
+  font-size: 12px;
+  color: var(--cm-text-muted);
+  max-width: 80px;
+}
+.crypto-messenger .cm-chat-entry__remove {
+  background: none;
+  border: none;
+  color: var(--cm-danger);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px;
+  transition: opacity var(--cm-transition);
+}
+.crypto-messenger .cm-chat-entry__remove:hover {
+  opacity: .7;
+}
+
+/* Slider */
+.crypto-messenger .cm-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--cm-border);
+  border-radius: 2px;
+  outline: none;
+}
+.crypto-messenger .cm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--cm-accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.crypto-messenger .cm-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--cm-accent);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* ── Toast / Notification ──────────────────────────────────── */
+.crypto-messenger .cm-toast-area {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.crypto-messenger .cm-toast {
+  padding: 10px 20px;
+  border-radius: var(--cm-radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  pointer-events: all;
+  animation: cm-toast-in .3s ease-out;
+  box-shadow: var(--cm-shadow);
+  white-space: nowrap;
+}
+.crypto-messenger .cm-toast--success { background: var(--cm-accent); }
+.crypto-messenger .cm-toast--error   { background: var(--cm-danger); }
+.crypto-messenger .cm-toast--info    { background: var(--cm-info); }
+.crypto-messenger .cm-toast--warning { background: var(--cm-warning); color: #1a1a1a; }
+.crypto-messenger .cm-toast.removing {
+  animation: cm-toast-out .25s ease-in forwards;
+}
+@keyframes cm-toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cm-toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-8px) scale(.95); }
+}
+
+/* ── Steganography Encode Layout ────────────────────────────── */
+.crypto-messenger .cm-stego-encode-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* Carrier header with capacity badge */
+.crypto-messenger .cm-carrier-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Carrier container: textarea + overlay */
+.crypto-messenger .cm-carrier-container {
+  position: relative;
+  min-height: 80px;
+}
+
+/* Thin analysis progress indicator — bottom border of carrier container */
+.crypto-messenger .cm-carrier-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--cm-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 0 0 var(--cm-radius-md) var(--cm-radius-md);
+}
+.crypto-messenger .cm-carrier-container.analyzing::after {
+  transform: scaleX(1);
+  animation: cm-analysis-pulse 1.2s ease-in-out infinite;
+}
+@keyframes cm-analysis-pulse {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+
+/* The actual textarea — visible text on top, caret visible */
+.crypto-messenger .cm-carrier-textarea {
+  background: transparent !important;
+  color: var(--cm-text-primary) !important;
+  caret-color: var(--cm-text-primary);
+  position: relative;
+  z-index: 2;
+  min-height: 80px !important;
+  max-height: 200px !important;
+  /* Match overlay text layout exactly to keep cursor aligned */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  tab-size: 4;
+  letter-spacing: normal;
+  word-spacing: normal;
+  /* Remove native textarea appearance that adds internal padding on iOS */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Hide scrollbar completely — zero-width ensures NO space is reserved,
+     so textarea and overlay have identical available text width.
+     User can still scroll via mouse wheel, keyboard, and touch. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+/* WebKit: zero-width scrollbar = no space reserved */
+.crypto-messenger .cm-carrier-textarea::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+/* Focus ring: textarea is on top (z-index 2), overlay behind (z-index 1).
+   The overlay has pointer-events: none, so clicks pass through to textarea.
+   Focus ring (box-shadow) extends outward beyond the border and is fully visible. */
+
+/* Overlay layer behind textarea: shows background highlights only (text is transparent) */
+.crypto-messenger .cm-carrier-overlay {
+  position: absolute;
+  top: 1px;   /* account for textarea border */
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  pointer-events: none;
+  overflow: hidden;  /* scroll synced from textarea via JS — prevents independent scrolling */
+  padding: 10px 12px;
+  font-family: var(--cm-font-sans);
+  font-size: 14px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;  /* must match textarea exactly */
+  tab-size: 4;                /* must match textarea exactly */
+  letter-spacing: normal;     /* must match textarea exactly */
+  word-spacing: normal;       /* must match textarea exactly */
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  background: var(--cm-bg-input);
+  z-index: 1;
+  border-radius: calc(var(--cm-radius-md) - 1px);
+}
+.crypto-messenger .cm-carrier-overlay::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Placeholder text in overlay when textarea is empty */
+.crypto-messenger .cm-carrier-overlay:empty::before {
+  content: attr(data-placeholder);
+  color: var(--cm-text-muted);
+  font-style: italic;
+  pointer-events: none;
+}
+.crypto-messenger .cm-stego-capacity-badge {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--cm-font-mono);
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: var(--cm-accent-dim);
+  color: var(--cm-accent);
+  border: 1px solid var(--cm-accent);
+  white-space: nowrap;
+}
+.crypto-messenger .cm-stego-capacity-badge.cm-stego-capacity-badge--low {
+  background: rgba(239,68,68,.12);
+  color: var(--cm-danger);
+  border-color: var(--cm-danger);
+}
+.crypto-messenger .cm-stego-capacity-badge.cm-stego-capacity-badge--ok {
+  background: rgba(245,158,11,.12);
+  color: var(--cm-warning);
+  border-color: var(--cm-warning);
+}
+
+/* Highlighted spans — per-channel colors */
+.crypto-messenger .stego-hl {
+  border-radius: 3px;
+  /* No padding/border — must not affect text layout for cursor alignment */
+  padding: 0;
+  cursor: help;
+  position: relative;
+  transition: filter .15s ease;
+}
+.crypto-messenger .stego-hl:hover {
+  filter: brightness(1.3);
+}
+
+/* JS-powered fixed-position tooltip (not clipped by overflow) */
+.crypto-messenger .cm-stego-tooltip {
+  position: fixed;
+  z-index: 99999;
+  background: #1a1d27;
+  border: 1px solid #3a3d48;
+  color: #e4e6eb;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: pre-line;
+  max-width: 280px;
+  min-width: 120px;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,.7);
+  font-family: var(--cm-font-sans);
+  font-style: normal;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .15s ease, transform .15s ease;
+}
+.crypto-messenger .cm-stego-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Auto-detected channel badges */
+.crypto-messenger .cm-stego-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 24px;
+}
+.crypto-messenger .cm-stego-channel-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.crypto-messenger .cm-stego-channel-badge__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.crypto-messenger .cm-stego-channel-badge__bits {
+  font-family: var(--cm-font-mono);
+  font-size: 10px;
+  opacity: .8;
+}
+
+/* Result section */
+.crypto-messenger .cm-stego-result-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Result preview header */
+.crypto-messenger .cm-stego-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* Compact button */
+.crypto-messenger .cm-btn--compact {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-width: unset;
+}
+
+/* Stego result preview */
+.crypto-messenger .cm-stego-result {
+  background: var(--cm-bg-tertiary);
+  border: 1px solid var(--cm-border);
+  border-radius: var(--cm-radius-md);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cm-accent);
+  min-height: 50px;
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.crypto-messenger .cm-stego-result:empty::before {
+  content: 'Результат кодирования появится здесь…';
+  color: var(--cm-text-muted);
+  font-style: italic;
+  font-family: var(--cm-font-sans);
+}
+
+/* Responsive: adjust carrier area on narrow screens */
+@media (max-width: 700px) {
+  .crypto-messenger .cm-carrier-textarea {
+    min-height: 60px !important;
+    max-height: 140px !important;
+    /* MUST match overlay font-size & padding exactly for cursor alignment */
+    font-size: 13px !important;
+    padding: 8px 10px !important;
+  }
+  .crypto-messenger .cm-carrier-overlay {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+  .crypto-messenger .cm-stego-result {
+    min-height: 30px;
+    max-height: 80px;
+  }
+}
+
+/* ── Mode-specific input visibility ────────────────────────── */
+.crypto-messenger .cm-input-panel { display: none; }
+.crypto-messenger .cm-input-panel.active { display: flex; flex-direction: column; gap: 10px; }
+
+/* Sub-mode sections visibility */
+.crypto-messenger .cm-submode-section { display: none; }
+.crypto-messenger .cm-submode-section.active { display: flex; flex-direction: column; gap: 10px; }
+
+/* Stego channels section only in stego mode */
+.crypto-messenger .cm-settings__section--stego-channels {
+  display: none;
+}
+.crypto-messenger .cm-settings__section--stego-channels.visible {
+  display: flex;
+}
+
+/* ── Utilities ─────────────────────────────────────────────── */
+.crypto-messenger .cm-hidden { display: none !important; }
+.crypto-messenger .cm-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .crypto-messenger {
+    --cm-header-h: 48px;
+    --cm-tabs-h: 38px;
+    --cm-subtabs-h: 36px;
+    --cm-input-min-h: 120px;
+  }
+  .crypto-messenger .cm-header {
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .crypto-messenger .cm-header__logo {
+    font-size: 14px;
+    gap: 6px;
+  }
+  .crypto-messenger .cm-header__logo-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 13px;
+  }
+  .crypto-messenger .cm-header__chat-id {
+    display: none;
+  }
+  .crypto-messenger .cm-header__status span {
+    display: none;
+  }
+  .crypto-messenger .cm-tabs {
+    padding: 0 8px;
+    gap: 2px;
+  }
+  .crypto-messenger .cm-tab {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .crypto-messenger .cm-subtabs {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+  .crypto-messenger .cm-subtab {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .crypto-messenger .cm-encrypt-result {
+    min-height: 30px;
+    max-height: 80px;
+    font-size: 11px;
+  }
+  .crypto-messenger .cm-input-area {
+    padding: 8px 10px;
+  }
+  /* Stego layout already single-column */
+  .crypto-messenger .cm-input--password {
+    max-width: 100%;
+  }
+  .crypto-messenger .cm-textarea {
+    min-height: 36px;
+    max-height: 80px;
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+  .crypto-messenger .cm-btn--send {
+    width: 38px;
+    height: 38px;
+    font-size: 16px;
+  }
+  .crypto-messenger .cm-direction-toggle__btn {
+    padding: 5px 10px;
+    font-size: 11px;
+  }
+  .crypto-messenger .cm-settings {
+    width: 100%;
+    max-width: 100vw;
+  }
+  .crypto-messenger .cm-settings__body {
+    padding: 12px;
+    gap: 14px;
+  }
+  .crypto-messenger .cm-settings__row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .crypto-messenger .cm-settings__label {
+    font-size: 12px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .crypto-messenger .cm-settings__select,
+  .crypto-messenger .cm-settings__input {
+    max-width: 100%;
+    font-size: 12px;
+  }
+  .crypto-messenger .cm-result-preview {
+    max-height: 60px;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 768px) {
+  .crypto-messenger .cm-messages {
+    padding: 20px 24px;
+  }
+  .crypto-messenger .cm-input-area {
+    padding: 14px 24px;
+  }
+
+}
+
+@media (min-width: 1024px) {
+  .crypto-messenger {
+    max-width: 900px;
+    margin: 0 auto;
+    border-left: 1px solid var(--cm-border);
+    border-right: 1px solid var(--cm-border);
+  }
+}
+
+/* ── Focus visible for keyboard nav ────────────────────────── */
+.crypto-messenger :focus-visible {
+  outline: 2px solid var(--cm-accent);
+  outline-offset: 2px;
+}
+.crypto-messenger button:focus:not(:focus-visible),
+.crypto-messenger input:focus:not(:focus-visible),
+.crypto-messenger textarea:focus:not(:focus-visible),
+.crypto-messenger select:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Dev Tester Panel (Ctrl+Shift+D)
+   ══════════════════════════════════════════════════════════════ */
+#dev-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 480px;
+  max-width: 95vw;
+  height: 100vh;
+  background: #0d0f15;
+  border-left: 2px solid #22c55e;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: #e4e6eb;
+  box-shadow: -4px 0 24px rgba(0,0,0,.7);
+  animation: dev-slide-in .25s ease-out;
+}
+@keyframes dev-slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+#dev-panel * { box-sizing: border-box; }
+
+#dev-panel .dev-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #111318;
+  border-bottom: 1px solid #2a2d38;
+  flex-shrink: 0;
+}
+#dev-panel .dev-panel__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #22c55e;
+}
+#dev-panel .dev-panel__actions {
+  display: flex;
+  gap: 6px;
+}
+#dev-panel .dev-panel__btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #2a2d38;
+  border-radius: 6px;
+  background: #1e2028;
+  color: #e4e6eb;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+#dev-panel .dev-panel__btn:hover {
+  background: #252730;
+  border-color: #6b7085;
+}
+#dev-panel .dev-panel__btn--close {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+#dev-panel .dev-panel__btn--close:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+/* Progress bar */
+#dev-panel .dev-panel__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #111318;
+}
+#dev-panel .dev-panel__progress-bar {
+  flex: 1;
+  height: 4px;
+  background: #2a2d38;
+  border-radius: 2px;
+  overflow: hidden;
+}
+#dev-panel .dev-panel__progress-bar::after {
+  content: '';
+  display: block;
+  width: var(--dev-progress, 0%);
+  height: 100%;
+  background: #22c55e;
+  border-radius: 2px;
+  transition: width .3s ease;
+}
+#dev-panel .dev-panel__progress-text {
+  font-size: 11px;
+  color: #6b7085;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+
+/* Summary grid */
+#dev-panel .dev-panel__summary {
+  padding: 12px 16px;
+  border-bottom: 1px solid #2a2d38;
+  flex-shrink: 0;
+}
+#dev-panel .dev-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+#dev-panel .dev-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: #14161c;
+  border-radius: 8px;
+  border: 1px solid #2a2d38;
+}
+#dev-panel .dev-stat__value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+#dev-panel .dev-stat__label {
+  font-size: 10px;
+  color: #6b7085;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 2px;
+}
+#dev-panel .dev-pass .dev-stat__value { color: #22c55e; }
+#dev-panel .dev-fail .dev-stat__value { color: #ef4444; }
+#dev-panel .dev-running {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+/* Results list */
+#dev-panel .dev-panel__results {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+#dev-panel .dev-suite {
+  margin-bottom: 6px;
+  border: 1px solid #2a2d38;
+  border-radius: 8px;
+  overflow: hidden;
+}
+#dev-panel .dev-suite--pass { border-color: #166534; }
+#dev-panel .dev-suite--fail { border-color: #7f1d1d; }
+
+#dev-panel .dev-suite__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #181a20;
+  cursor: pointer;
+  transition: background .15s ease;
+  user-select: none;
+}
+#dev-panel .dev-suite__header:hover {
+  background: #1e2028;
+}
+#dev-panel .dev-suite__icon {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+#dev-panel .dev-suite__name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#dev-panel .dev-suite__stats {
+  font-size: 11px;
+  color: #6b7085;
+  font-family: 'SF Mono', Consolas, monospace;
+  flex-shrink: 0;
+}
+
+#dev-panel .dev-suite__items {
+  padding: 4px 0;
+  background: #0d0f15;
+}
+#dev-panel .dev-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+#dev-panel .dev-item--pass { color: #9ca0ab; }
+#dev-panel .dev-item--fail { color: #ef4444; background: rgba(239,68,68,.06); }
+#dev-panel .dev-item__icon {
+  flex-shrink: 0;
+  width: 14px;
+  text-align: center;
+}
+#dev-panel .dev-item--pass .dev-item__icon { color: #22c55e; }
+#dev-panel .dev-item--fail .dev-item__icon { color: #ef4444; }
+#dev-panel .dev-item__desc {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+#dev-panel .dev-item__error {
+  display: block;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 10px;
+  color: #f59e0b;
+  margin-top: 2px;
+  padding-left: 20px;
+}
+
+/* Dev panel scrollbar */
+#dev-panel ::-webkit-scrollbar { width: 5px; }
+#dev-panel ::-webkit-scrollbar-track { background: transparent; }
+#dev-panel ::-webkit-scrollbar-thumb { background: #2a2d38; border-radius: 3px; }
+#dev-panel ::-webkit-scrollbar-thumb:hover { background: #6b7085; }
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+  #dev-panel {
+    width: 100%;
+    max-width: 100vw;
+  }
+}

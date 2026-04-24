@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0b0d13">
+  <title>Стегонатор — Стеганография и шифрование</title>
+  <link rel="stylesheet" href="css/messenger.css">
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+</head>
+<body>
+
+<div class="crypto-messenger" id="cryptoMessenger">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Loading Overlay (shown while Az.js dictionaries load)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="cm-loading" id="loading">
+    <div class="cm-loading__spinner"></div>
+    <div class="cm-loading__text">Загрузка морфологических словарей…</div>
+    <div class="cm-loading__progress">
+      <div class="cm-loading__progress-bar" id="loadingProgressBar"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Header
+       ═══════════════════════════════════════════════════════════ -->
+  <header class="cm-header" id="header">
+    <a class="cm-header__logo" href="#">
+      <svg class="cm-icon cm-icon--lg"><use href="assets/icons/sprite.svg#icon-shield"/></svg>
+      <span>Стегонатор</span>
+    </a>
+    <div class="cm-header__status" id="connectionStatus">
+      <span class="cm-header__status-dot"></span>
+      <span>Зашифровано</span>
+    </div>
+    <div class="cm-header__spacer"></div>
+    <div class="cm-header__chat-id" id="chatIdDisplay" title="ID чата">—</div>
+    <button class="cm-header__btn" id="btnSettings" type="button" aria-label="Настройки"><svg class="cm-icon"><use href="assets/icons/sprite.svg#icon-settings"/></svg></button>
+  </header>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Main Mode Tabs (Encryption / Steganography)
+       ═══════════════════════════════════════════════════════════ -->
+  <nav class="cm-tabs" id="mainTabs">
+    <button class="cm-tab active" data-category="encryption" type="button">
+      <svg class="cm-icon"><use href="assets/icons/sprite.svg#icon-shield"/></svg>&nbsp; Шифрование
+    </button>
+    <button class="cm-tab" data-category="steganography" type="button">
+      <svg class="cm-icon"><use href="assets/icons/sprite.svg#icon-file-text"/></svg>&nbsp; Стеганография
+    </button>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Sub-mode Selector (depends on active main mode)
+       ═══════════════════════════════════════════════════════════ -->
+
+  <!-- Encryption sub-modes -->
+  <div class="cm-subtabs" id="subtabsEncryption" data-category-subtabs="encryption">
+    <button class="cm-subtab" data-mode="invisible" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-eye-off"/></svg> Невидимые</button>
+    <button class="cm-subtab" data-mode="base64" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-type"/></svg> Base64</button>
+    <button class="cm-subtab" data-mode="compression" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-archive"/></svg> Deflate+B64</button>
+    <button class="cm-subtab" data-mode="emoji" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-smile"/></svg> Эмодзи</button>
+    <button class="cm-subtab" data-mode="chinese" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-globe"/></svg> Иероглифы</button>
+    <button class="cm-subtab" data-mode="layout" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-keyboard"/></svg> Раскладка</button>
+    <button class="cm-subtab active" data-mode="aes256" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-lock"/></svg> AES-256</button>
+  </div>
+
+  <!-- Steganography sub-modes -->
+  <div class="cm-subtabs cm-hidden" id="subtabsSteganography" data-category-subtabs="steganography">
+    <button class="cm-subtab active" data-mode="stego-encode" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-file-text"/></svg> Кодирование</button>
+    <button class="cm-subtab" data-mode="stego-decode" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-unlock"/></svg> Декодирование</button>
+    <button class="cm-subtab" data-mode="stego-recovery" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-wrench"/></svg> Восстановление</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Input Area (bottom, always visible — content varies by mode)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="cm-input-area" id="inputArea">
+
+    <!-- ─── Encryption Mode Input ─────────────────────────────── -->
+    <div class="cm-input-panel active" id="panelEncryption" data-category-panel="encryption">
+      <!-- Message input + Send -->
+      <div class="cm-input-row">
+        <textarea
+          class="cm-textarea"
+          id="encryptInput"
+          placeholder="Введите сообщение для шифрования…"
+          rows="2"
+        ></textarea>
+        <button class="cm-btn cm-btn--send" id="btnEncryptSend" type="button" aria-label="Отправить"><svg class="cm-icon"><use href="assets/icons/sprite.svg#icon-send"/></svg></button>
+      </div>
+      <!-- Password + Encode/Decode toggle -->
+      <div class="cm-input-row">
+        <div class="cm-password-wrap">
+          <input
+            class="cm-input cm-input--password"
+            id="encryptPassword"
+            type="password"
+            placeholder="Пароль"
+            autocomplete="off"
+          >
+          <button class="cm-password-toggle" id="btnToggleEncryptPw" type="button" aria-label="Показать пароль"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-eye"/></svg></button>
+        </div>
+        <div class="cm-direction-toggle" id="encryptDirection">
+          <button class="cm-direction-toggle__btn active" data-direction="encode" type="button">Шифровать</button>
+          <button class="cm-direction-toggle__btn" data-direction="decode" type="button">Дешифровать</button>
+        </div>
+        <div style="flex:1"></div>
+        <button class="cm-btn cm-btn--secondary cm-btn--icon" id="btnEncryptCopy" type="button" title="Копировать"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-copy"/></svg></button>
+      </div>
+      <!-- Encryption result preview -->
+      <div class="cm-encrypt-result-section" id="encryptResultSection" style="display:none">
+        <div class="cm-encrypt-preview-header">
+          <span class="cm-input-label">Результат</span>
+          <div class="cm-encrypt-preview-actions">
+            <button class="cm-btn cm-btn--secondary cm-btn--compact" id="btnEncryptResultCopy" type="button">
+              <svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-copy"/></svg>
+            </button>
+            <button class="cm-btn cm-btn--primary cm-btn--compact" id="btnBridgeSend" type="button" style="display:none">
+              <svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-send"/></svg>
+              <span>Отправить</span>
+            </button>
+          </div>
+        </div>
+        <div class="cm-encrypt-result" id="encryptResultPreview"></div>
+      </div>
+    </div>
+
+    <!-- ─── Steganography Encode Input ────────────────────────── -->
+    <div class="cm-input-panel" id="panelStegoEncode" data-category-panel="stego-encode">
+      <div class="cm-stego-encode-layout">
+        <!-- Secret message -->
+        <div class="cm-field-group">
+          <label class="cm-input-label" for="secret-message">Секретное сообщение</label>
+          <textarea
+            class="cm-textarea"
+            id="secret-message"
+            placeholder="Секретное сообщение…"
+            rows="2"
+          ></textarea>
+        </div>
+        <!-- Carrier text with overlay highlighting -->
+        <div class="cm-field-group">
+          <div class="cm-carrier-header">
+            <label class="cm-input-label" for="carrier-text">Текст-носитель</label>
+            <span class="cm-stego-capacity-badge" id="capacity-badge">0 бит</span>
+          </div>
+          <div class="cm-carrier-container" id="carrierContainer">
+            <textarea
+              class="cm-textarea cm-carrier-textarea"
+              id="carrier-text"
+              placeholder="Обычный текст для сокрытия…"
+              rows="4"
+            ></textarea>
+            <div class="cm-carrier-overlay" id="carrier-overlay" aria-hidden="true"></div>
+          </div>
+          <!-- Auto-detected channels -->
+          <div class="cm-stego-channels" id="stego-channels">
+            <!-- Channel badges will be inserted here by JS -->
+          </div>
+        </div>
+        <!-- Password + Encode button -->
+        <div class="cm-input-row">
+          <div class="cm-password-wrap">
+            <input
+              class="cm-input cm-input--password"
+              id="password-encode"
+              type="password"
+              placeholder="Пароль"
+              autocomplete="off"
+            >
+            <button class="cm-password-toggle" id="btnToggleStegoEncPw" type="button" aria-label="Показать пароль"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-eye"/></svg></button>
+          </div>
+          <button class="cm-btn cm-btn--primary" id="btn-encode" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-zap"/></svg> Кодировать</button>
+        </div>
+        <!-- Result preview -->
+        <div class="cm-stego-result-section">
+          <div class="cm-stego-preview-header">
+            <span class="cm-input-label">Результат</span>
+            <button class="cm-btn cm-btn--secondary cm-btn--compact" id="btn-copy" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-copy"/></svg></button>
+          </div>
+          <div class="cm-stego-result" id="output-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Steganography Decode Input ────────────────────────── -->
+    <div class="cm-input-panel" id="panelStegoDecode" data-category-panel="stego-decode">
+      <div class="cm-input-row--full">
+        <label class="cm-input-label" for="stego-text">Стего-текст</label>
+        <textarea
+          class="cm-textarea cm-textarea--tall"
+          id="stego-text"
+          placeholder="Вставьте текст со скрытым сообщением…"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="cm-input-row">
+        <div class="cm-password-wrap">
+          <input
+            class="cm-input cm-input--password"
+            id="password-decode"
+            type="password"
+            placeholder="Пароль"
+            autocomplete="off"
+          >
+          <button class="cm-password-toggle" id="btnToggleStegoDecPw" type="button" aria-label="Показать пароль"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-eye"/></svg></button>
+        </div>
+        <div style="flex:1"></div>
+        <button class="cm-btn cm-btn--primary" id="btn-decode" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-unlock"/></svg> Декодировать</button>
+      </div>
+      <div class="cm-result-preview" id="decoded-message"></div>
+    </div>
+
+    <!-- ─── Steganography Recovery Input ──────────────────────── -->
+    <div class="cm-input-panel" id="panelStegoRecovery" data-category-panel="stego-recovery">
+      <div class="cm-input-row--full">
+        <label class="cm-input-label" for="recovery-text">Повреждённый стего-текст</label>
+        <textarea
+          class="cm-textarea cm-textarea--tall"
+          id="recovery-text"
+          placeholder="Вставьте повреждённый текст для восстановления…"
+          rows="3"
+        ></textarea>
+      </div>
+      <div class="cm-input-row">
+        <div class="cm-password-wrap">
+          <input
+            class="cm-input cm-input--password"
+            id="password-recovery"
+            type="password"
+            placeholder="Пароль"
+            autocomplete="off"
+          >
+          <button class="cm-password-toggle" id="btnToggleStegoRecPw" type="button" aria-label="Показать пароль"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-eye"/></svg></button>
+        </div>
+        <div style="flex:1"></div>
+        <button class="cm-btn cm-btn--primary" id="btn-recovery" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-wrench"/></svg> Восстановить</button>
+      </div>
+      <div class="cm-result-preview" id="recovery-result"></div>
+    </div>
+
+  </div><!-- /cm-input-area -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Settings Panel (slide-out from right)
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="cm-settings-overlay" id="settingsOverlay"></div>
+  <aside class="cm-settings" id="settingsPanel">
+    <div class="cm-settings__header">
+      <span class="cm-settings__title"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-settings"/></svg> Настройки</span>
+      <button class="cm-settings__close" id="btnCloseSettings" type="button" aria-label="Закрыть"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-x"/></svg></button>
+    </div>
+    <div class="cm-settings__body">
+
+      <!-- ─── Общие ──────────────────────────────────────────── -->
+      <div class="cm-settings__section">
+        <div class="cm-settings__section-title">Общие</div>
+
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Алгоритм по умолчанию</span>
+          <select class="cm-settings__select" id="settingDefaultAlgo">
+            <option value="aes256" selected>AES-256</option>
+            <option value="invisible">Невидимые символы</option>
+            <option value="base64">Base64</option>
+            <option value="compression">Deflate+B64</option>
+            <option value="emoji">Эмодзи</option>
+            <option value="chinese">Иероглифы</option>
+            <option value="layout">Раскладка</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ─── Пароли чатов ──────────────────────────────────── -->
+      <div class="cm-settings__section">
+        <div class="cm-settings__section-title">Пароли чатов</div>
+
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Текущий ID чата</span>
+          <input
+            class="cm-settings__input"
+            id="settingCurrentChatId"
+            type="text"
+            placeholder="chat-id"
+            autocomplete="off"
+            style="max-width:120px;"
+          >
+        </div>
+
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Сохранять пароль для чата</span>
+          <label class="cm-toggle">
+            <input type="checkbox" id="settingRememberPw">
+            <span class="cm-toggle__track"></span>
+          </label>
+        </div>
+
+        <!-- Chat password list (populated by JS) -->
+        <div id="chatPasswordList">
+          <!-- Example entry (hidden by default, used as template) -->
+          <!--
+          <div class="cm-chat-entry">
+            <span class="cm-chat-entry__id">abc123</span>
+            <span class="cm-chat-entry__pw">••••••</span>
+            <button class="cm-chat-entry__remove" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-trash"/></svg></button>
+          </div>
+          -->
+        </div>
+
+        <div class="cm-input-row" style="gap:6px;">
+          <input
+            class="cm-input cm-input--compact"
+            id="newChatIdInput"
+            type="text"
+            placeholder="ID чата"
+            autocomplete="off"
+            style="flex:1;"
+          >
+          <input
+            class="cm-input cm-input--compact"
+            id="newChatPwInput"
+            type="password"
+            placeholder="Пароль"
+            autocomplete="off"
+            style="flex:1;"
+          >
+          <button class="cm-btn cm-btn--secondary" id="btnAddChatPw" type="button"><svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-plus"/></svg></button>
+        </div>
+      </div>
+
+      <!-- ─── Мост API ───────────────────────────────────────── -->
+      <div class="cm-settings__section">
+        <div class="cm-settings__section-title">
+          <svg class="cm-icon cm-icon--sm"><use href="assets/icons/sprite.svg#icon-bridge"/></svg>
+          Мост API
+        </div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Включить мост</span>
+          <label class="cm-toggle">
+            <input type="checkbox" id="settingBridgeEnabled" checked>
+            <span class="cm-toggle__track"></span>
+          </label>
+        </div>
+        <div class="cm-settings__row" id="bridge-method-row">
+          <span class="cm-settings__label">Метод отправки</span>
+          <select class="cm-settings__select" id="settingBridgeMethod">
+            <option value="postMessage">postMessage (iframe)</option>
+            <option value="jsi">JSI (Android)</option>
+            <option value="pywebview">PyWebView</option>
+            <option value="clipboard">Буфер обмена</option>
+          </select>
+        </div>
+        <div class="cm-settings__row" id="bridge-target-row">
+          <span class="cm-settings__label">Цель (origin)</span>
+          <input class="cm-settings__input" id="settingBridgeTarget" type="text" placeholder="*" autocomplete="off" style="max-width:140px;">
+        </div>
+        <div class="cm-settings__row" id="bridge-autodecode-row">
+          <span class="cm-settings__label">Автодекодирование входящих</span>
+          <label class="cm-toggle">
+            <input type="checkbox" id="settingBridgeAutoDecode">
+            <span class="cm-toggle__track"></span>
+          </label>
+        </div>
+        <div class="cm-settings__row" id="bridge-allow-detection-row">
+          <span class="cm-settings__label">Автообнаружение шифрования</span>
+          <label class="cm-toggle">
+            <input type="checkbox" id="settingBridgeAllowDetection" checked>
+            <span class="cm-toggle__track"></span>
+          </label>
+        </div>
+        <div class="cm-settings__note">Мост доступен только в контексте этого окна. Другие вкладки и приложения не могут вызывать API. <a href="docs/bridge-api-guide.md" target="_blank" style="color:var(--cm-accent)">Инструкция по Bridge API</a></div>
+      </div>
+
+      <!-- ─── Каналы стего (only visible in stego mode) ──────── -->
+      <div class="cm-settings__section cm-settings__section--stego-channels" id="stegoChannelsSection">
+        <div class="cm-settings__section-title">Каналы стего</div>
+        <div class="cm-settings__note">Каналы определяются автоматически по тексту-носителю. Большинство каналов всегда активны — они необходимы для корректного декодирования.</div>
+
+        <!-- Always-on channels (informational, no toggle) -->
+        <div class="cm-channel-list">
+          <span class="cm-channel-list__item cm-channel-list__item--always">Пунктуация</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Форматы дат</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Опечатки (дефисы)</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Дублеты</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Аббревиатуры</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Пробелы (NBSP)</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Синонимы</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Телефоны</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">URL-адреса</span>
+          <span class="cm-channel-list__item cm-channel-list__item--always">Email-адреса</span>
+        </div>
+
+        <!-- Optional channel: letter-stego (safe to disable) -->
+        <div class="cm-checkbox-row">
+          <input type="checkbox" class="channel-toggle" data-channel="letter-stego" id="chLetterStego" checked>
+          <label for="chLetterStego">Буквенное стего (мутации букв)</label>
+        </div>
+        <div class="cm-settings__note">Единственный канал, который можно отключить — декодер проигнорирует его автоматически. Уменьшает ёмкость, но текст выглядит естественнее.</div>
+      </div>
+
+      <!-- ─── Синонимы ──────────────────────────────────────── -->
+      <div class="cm-settings__section">
+        <div class="cm-settings__section-title">Синонимы</div>
+
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Порог (cos)</span>
+          <div style="display:flex; align-items:center; gap:8px; flex:1; max-width:140px;">
+            <input class="cm-slider" id="syn-threshold" type="range" min="0.5" max="0.99" step="0.01" value="0.7" style="flex:1;">
+            <span class="cm-settings__value" id="threshold-val">0.70</span>
+          </div>
+        </div>
+
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Режим</span>
+          <div style="display:flex; gap:4px;">
+            <button class="cm-btn cm-btn--toggle syn-mode-btn active" data-synmode="static" type="button">Статический</button>
+            <button class="cm-btn cm-btn--toggle syn-mode-btn" data-synmode="backend" type="button">Сервер</button>
+          </div>
+        </div>
+        <div class="cm-settings__row cm-hidden" id="backend-url-row">
+          <span class="cm-settings__label">URL сервера</span>
+          <input class="cm-settings__input" id="backend-url" type="url" placeholder="http://localhost:8000" style="max-width:160px;">
+        </div>
+        <div class="cm-settings__row cm-hidden" id="backend-status-row">
+          <span class="cm-settings__label">Статус</span>
+          <span id="backend-status" style="font-size:12px; color:var(--cm-text-muted);">—</span>
+        </div>
+        <div class="cm-settings__row cm-hidden" id="backend-check-row">
+          <div style="flex:1;"></div>
+          <button class="cm-btn cm-btn--secondary" id="btn-check-backend" type="button">Проверить</button>
+        </div>
+      </div>
+
+      <!-- ─── Статистика ─────────────────────────────────────── -->
+      <div class="cm-settings__section">
+        <div class="cm-settings__section-title">Статистика</div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Каналы</span>
+          <span class="cm-settings__value" id="stat-channels">0</span>
+        </div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Бит ёмкости</span>
+          <span class="cm-settings__value" id="stat-bits">0</span>
+        </div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Эффективность</span>
+          <span class="cm-settings__value" id="stat-efficiency">0%</span>
+        </div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Время</span>
+          <span class="cm-settings__value" id="stat-time">0 мс</span>
+        </div>
+        <div class="cm-settings__row">
+          <span class="cm-settings__label">Длина секр. сообщения</span>
+          <span class="cm-settings__value"><span id="secret-length">0</span> симв (<span id="secret-bytes">0</span> байт)</span>
+        </div>
+      </div>
+
+    </div><!-- /cm-settings__body -->
+  </aside>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       Toast / Notification Area
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="cm-toast-area" id="toastArea"></div>
+
+</div><!-- /crypto-messenger -->
+
+<!-- ═════════════════════════════════════════════════════════════
+     Scripts — Az.js morphological libs first, then main.js as module
+     ═════════════════════════════════════════════════════════════ -->
+<script src="lib/az.js"></script>
+<script src="lib/az.morph.js"></script>
+<script src="lib/az.dawg.js"></script>
+<script src="lib/az.tokens.js"></script>
+<script src="lib/az.syntax.js"></script>
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
